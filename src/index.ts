@@ -23,11 +23,11 @@ async function parseExports(filePath: string): Promise<Set<unknown>> {
   const exports = new Set()
 
   traverse(ast, {
-    ExportNamedDeclaration({ node }) {
+    ExportNamedDeclaration({ node }: any) {
       // 处理 export const a = 1 或 export function b() {}
       if (node.declaration) {
         if (node.declaration.declarations) {
-          node.declaration.declarations.forEach((d) => {
+          node.declaration.declarations.forEach((d: any) => {
             if (d.id?.type === 'Identifier')
               exports.add(d.id.name)
           })
@@ -38,7 +38,7 @@ async function parseExports(filePath: string): Promise<Set<unknown>> {
       }
       // 处理 export { a, b as c }
       if (node.specifiers) {
-        node.specifiers.forEach((s) => {
+        node.specifiers.forEach((s: any) => {
           if (s.exported?.name)
             exports.add(s.exported.name)
         })
