@@ -74,7 +74,7 @@ async function getRelatedFiles(files: string[], importsDir: string): Promise<unk
     let isRelated = false
 
     traverse(ast, {
-      ImportDeclaration({ node }) {
+      ImportDeclaration({ node }: { node: any }) {
         if (isRelated)
           return
 
