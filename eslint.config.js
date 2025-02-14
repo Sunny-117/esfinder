@@ -5,4 +5,13 @@ export default antfu(
   {
     type: 'lib',
   },
+  // 只对src生效
+  {
+    ignores: ['test', 'example'],
+  },
+  {
+    rules: {
+      'no-console': 'off',
+    },
+  },
 )

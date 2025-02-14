@@ -61,6 +61,12 @@ importers:
         specifier: ^3.0.5
         version: 3.0.5(@types/debug@4.1.12)(@types/node@22.13.1)(jiti@2.4.2)(tsx@4.19.2)(yaml@2.7.0)
 
+  example:
+    dependencies:
+      esfinder:
+        specifier: link:..
+        version: link:..
+
 packages:
 
   '@ampproject/remapping@2.3.0':

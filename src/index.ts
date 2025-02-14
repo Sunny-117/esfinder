@@ -1,12 +1,13 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { parse as babelParse } from '@babel/parser'
+// for ts
+// import traverse from '@babel/traverse'
 // @ts-expect-error todo
-import babelTraverse from '@babel/traverse'
+import traverseDefault from '@babel/traverse'
 import { globby } from 'globby'
 
-const traverse = babelTraverse.default
-
+const traverse = traverseDefault.default
 // 缓存导出内容 { [filePath]: Set<exportName> }
 const exportsCache = new Map()
 
@@ -112,12 +113,14 @@ async function getRelatedFiles(files: string[], importsDir: string): Promise<unk
 }
 
 // 使用示例
-const files = ['./src/a.js', './src/c.js']
-const importsDir = './src/__tests__'
+// const files = ['./src/a.js', './src/c.js']
+// const importsDir = './src/__tests__'
 
-// 预缓存目标文件的导出内容
-Promise.all(files.map(f => parseExports(path.resolve(f))))
-  .then(() => getRelatedFiles(files, importsDir))
-  // eslint-disable-next-line no-console
-  .then(console.log)
-  .catch(console.error)
+// // 预缓存目标文件的导出内容
+// Promise.all(files.map(f => parseExports(path.resolve(f))))
+//   .then(() => getRelatedFiles(files, importsDir))
+
+//   .then(console.log)
+//   .catch(console.error)
+
+export { getRelatedFiles, parseExports }
