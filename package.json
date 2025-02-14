@@ -34,6 +34,11 @@
     "typecheck": "tsc --noEmit",
     "prepare": "simple-git-hooks"
   },
+  "dependencies": {
+    "@babel/parser": "^7.26.8",
+    "@babel/traverse": "^7.26.8",
+    "globby": "^14.1.0"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^4.1.1",
     "@antfu/ni": "^23.3.1",
