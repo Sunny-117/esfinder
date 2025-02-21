@@ -6,15 +6,69 @@
 [![JSDocs][jsdocs-src]][jsdocs-href]
 [![License][license-src]][license-href]
 
-ESFinder - 一个快速轻量的工具，用于分析模块依赖并查找哪些文件依赖了指定模块
+English | <a href="./README-zh.md">简体中文</a>
 
-## 开发
+`esfinder` is a tool to analyze and resolve file imports and their dependencies in JavaScript and TypeScript projects. It allows you to efficiently track related files based on import paths, supporting both static and dynamic imports.
+## Installation
 
-```shell
-pnpm i
-pnpm dev
-pnpm example
+```bash
+npm install esfinder
 ```
+
+## API Documentation
+
+### `parseExports(filePath: string): Promise<Set<string>>`
+
+#### Parameters:
+- **`filePath`** (string): The absolute or relative path of the file to parse.
+
+#### Returns:
+- **`Promise<Set<string>>`**: A `Promise` that resolves to a `Set` of export names found in the given file.
+
+#### Description:
+This function parses the exports of a file, returning a `Set` of all named and default exports. It caches the results to improve performance for repeated calls on the same file.
+
+### `getRelatedFiles(files: string[], importsDir: string, extensions: string[] = DEFAULT_EXTENSIONS): Promise<string[]>`
+
+#### Parameters:
+- **`files`** (string[]): A list of file paths to check for related imports.
+- **`importsDir`** (string): The directory containing files to be checked for imports.
+- **`extensions`** (string[]): An optional array of file extensions to resolve. Defaults to `['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs']`.
+
+#### Returns:
+- **`Promise<string[]>`**: A `Promise` that resolves to an array of file paths that are related to the given files, based on the imports and exports.
+
+#### Description:
+This function checks all files in the `importsDir` for `import` statements and compares them with the given `files`. It uses cached export data and attempts to resolve paths based on the provided extensions.
+
+## Usage Example
+
+```ts
+import path from 'node:path'
+import { getRelatedFiles, parseExports } from 'esfinder'
+
+const files = ['./src/a.js', './src/c.js']
+const importsDir = './src/__tests__'
+
+// Pre-cache the export contents of target files
+Promise.all(files.map(f => parseExports(path.resolve(f))))
+  .then(() => getRelatedFiles(files, importsDir))
+  .then(console.log)
+  .catch(console.error)
+```
+
+In this example:
+1. The exports of `a.js` and `c.js` are cached.
+2. The function `getRelatedFiles` finds all files in `__tests__` that are related to the given files based on their imports.
+
+## Contributing
+
+We welcome contributions to improve `esfinder`. Please fork the repository, create a branch for your feature, and submit a pull request.
+
+### Guidelines:
+- Follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+- Ensure that tests are added for any new features or bug fixes.
+- Update documentation as necessary.
 
 ## License
 
