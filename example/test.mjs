@@ -1,4 +1,4 @@
-import { parseExports, getRelatedFiles } from 'esfinder'
+import { parseExports, getRelatedFiles } from 'esfinder/swc'
 import path from 'node:path'
 
 const files = ['./src/a.js', './src/c.js']
