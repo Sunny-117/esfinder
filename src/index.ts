@@ -107,9 +107,7 @@ async function getRelatedFiles(
         // 如果路径没有后缀，尝试添加所有可能的后缀
         if (!path.extname(importSource)) {
           extensions.forEach((ext) => {
-            tryPaths.push(
-              path.resolve(baseDir, `${importSource}${ext}`),
-            )
+            tryPaths.push(path.resolve(baseDir, `${importSource}${ext}`))
           })
         }
 
@@ -136,6 +134,44 @@ async function getRelatedFiles(
           }
         }
       },
+      // 处理动态 import()
+      CallExpression({ node }: any) {
+        if (isRelated)
+          return
+
+        // 检查是否是动态的 import()
+        if (node.callee.type === 'Import') {
+          const importSource = node.arguments[0].value // 获取动态 import 的路径
+          const baseDir = path.dirname(testFile)
+
+          const tryPaths = [
+            path.resolve(baseDir, importSource), // 原始路径
+          ]
+
+          if (!path.extname(importSource)) {
+            extensions.forEach((ext) => {
+              tryPaths.push(path.resolve(baseDir, `${importSource}${ext}`))
+            })
+          }
+
+          // 检查所有可能的路径
+          for (const tryPath of tryPaths) {
+            // 优先检查缓存映射
+            const resolvedPath = pathResolutionCache.get(tryPath) || tryPath
+
+            if (targetFiles.has(resolvedPath)) {
+              isRelated = true
+              return
+            }
+
+            // 检查具名引用（需要对应路径的导出缓存）
+            if (exportsCache.has(resolvedPath)) {
+              isRelated = true
+              return
+            }
+          }
+        }
+      },
     })
 
     if (isRelated)
@@ -152,7 +188,6 @@ async function getRelatedFiles(
 // // 预缓存目标文件的导出内容
 // Promise.all(files.map(f => parseExports(path.resolve(f))))
 //   .then(() => getRelatedFiles(files, importsDir))
-
 //   .then(console.log)
 //   .catch(console.error)
 
