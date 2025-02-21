@@ -1,7 +1,7 @@
 {
   "name": "esfinder",
   "type": "module",
-  "version": "0.0.2-alpha.2",
+  "version": "0.0.2-alpha.3",
   "description": "A fast and lightweight tool for analyzing module dependencies and finding which files depend on a given module.",
   "author": "Sunny-117",
   "license": "MIT",
