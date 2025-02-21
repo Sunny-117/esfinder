@@ -1,8 +1,6 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { parse as babelParse } from '@babel/parser'
-// for ts
-// import traverse from '@babel/traverse'
 // @ts-expect-error todo
 import traverseDefault from '@babel/traverse'
 import { globby } from 'globby'
