@@ -51,17 +51,36 @@ async function parseExports(filePath: string): Promise<Set<unknown>> {
   exportsCache.set(filePath, exports)
   return exports
 }
+// 默认支持的后缀列表
+const DEFAULT_EXTENSIONS = ['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs']
 
-async function getRelatedFiles(files: string[], importsDir: string): Promise<unknown[]> {
-  // 将输入文件转为绝对路径
-  const targetFiles = new Set(files.map(f => path.resolve(f)))
+// 新增：路径解析缓存
+const pathResolutionCache = new Map()
+
+async function getRelatedFiles(
+  files: string[],
+  importsDir: string,
+  extensions: string[] = DEFAULT_EXTENSIONS,
+): Promise<string[]> {
+  // 将输入文件转为绝对路径（带规范化处理）
+  const targetFiles = new Set(
+    files.map((f) => {
+      const resolved = path.resolve(f)
+      // 缓存原始路径和所有可能的后缀组合
+      extensions.forEach((ext) => {
+        pathResolutionCache.set(resolved + ext, resolved)
+      })
+      return resolved
+    }),
+  )
 
   // 获取所有测试文件绝对路径
   const testFiles = await globby([`${importsDir}/**/*.{js,ts,jsx,tsx}`], {
     absolute: true,
+    expandDirectories: false,
   })
 
-  const results = new Set()
+  const results = new Set<string>()
 
   for (const testFile of testFiles) {
     const code = await fs.readFile(testFile, 'utf-8')
@@ -73,30 +92,46 @@ async function getRelatedFiles(files: string[], importsDir: string): Promise<unk
     let isRelated = false
 
     traverse(ast, {
-      ImportDeclaration({ node }: { node: any }) {
+      ImportDeclaration({ node }: any) {
         if (isRelated)
           return
 
-        // 解析导入路径为绝对路径
-        const importPath = path.resolve(
-          path.dirname(testFile),
-          node.source.value,
-        )
+        const importSource = node.source.value
+        const baseDir = path.dirname(testFile)
 
-        if (targetFiles.has(importPath)) {
-          // 只要存在直接引用就标记为相关
-          isRelated = true
-          return
+        // 新增：带后缀的智能解析
+        const tryPaths = [
+          path.resolve(baseDir, importSource), // 原始路径
+        ]
+
+        // 如果路径没有后缀，尝试添加所有可能的后缀
+        if (!path.extname(importSource)) {
+          extensions.forEach((ext) => {
+            tryPaths.push(
+              path.resolve(baseDir, `${importSource}${ext}`),
+            )
+          })
         }
 
-        // 检查具名引用
-        if (exportsCache.has(importPath)) {
-          const exports = exportsCache.get(importPath)
-          for (const specifier of node.specifiers) {
-            if (specifier.type === 'ImportSpecifier'
-              && exports.has(specifier.imported.name)) {
-              isRelated = true
-              return
+        // 检查所有可能的路径
+        for (const tryPath of tryPaths) {
+          // 优先检查缓存映射
+          const resolvedPath = pathResolutionCache.get(tryPath) || tryPath
+
+          if (targetFiles.has(resolvedPath)) {
+            isRelated = true
+            return
+          }
+
+          // 检查具名引用（需要对应路径的导出缓存）
+          if (exportsCache.has(resolvedPath)) {
+            const exports = exportsCache.get(resolvedPath)
+            for (const specifier of node.specifiers) {
+              if (specifier.type === 'ImportSpecifier'
+                && exports.has(specifier.imported.name)) {
+                isRelated = true
+                return
+              }
             }
           }
         }
