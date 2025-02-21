@@ -8,6 +8,14 @@
 
 ESFinder - 一个快速轻量的工具，用于分析模块依赖并查找哪些文件依赖了指定模块
 
+## 开发
+
+```shell
+pnpm i
+pnpm dev
+pnpm example
+```
+
 ## License
 
 [MIT](./LICENSE) License © [Sunny-117](https://github.com/Sunny-117)
