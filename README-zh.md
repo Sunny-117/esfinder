@@ -8,7 +8,7 @@
 
 简体中文 | <a href="./README.md">English</a>
 
-`esfinder` 是一个用于分析和解析 JavaScript 和 TypeScript 项目中文件的导入及其相关依赖的工具。它能够高效地追踪与导入路径相关的文件，支持静态和动态导入。
+`esfinder` 是一个基于Babel 和 SWC 的用于分析和解析 JavaScript 和 TypeScript 项目中文件的导入及其相关依赖的工具。它能够高效地追踪与导入路径相关的文件，支持静态和动态导入。
 
 ## 安装
 
@@ -46,7 +46,8 @@ npm install esfinder
 
 ```ts
 import path from 'node:path'
-import { getRelatedFiles, parseExports } from 'esfinder'
+import { getRelatedFiles, parseExports } from 'esfinder' // by babel
+import { getRelatedFiles, parseExports } from 'esfinder/swc' // by swc
 
 const files = ['./src/a.js', './src/c.js']
 const importsDir = './src/__tests__'

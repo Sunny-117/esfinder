@@ -8,7 +8,8 @@
 
 English | <a href="./README-zh.md">简体中文</a>
 
-`esfinder` is a tool to analyze and resolve file imports and their dependencies in JavaScript and TypeScript projects. It allows you to efficiently track related files based on import paths, supporting both static and dynamic imports.
+`esfinder is a tool based on Babel and SWC for analyzing and parsing file imports and their related dependencies in JavaScript and TypeScript projects. It can efficiently track files related to import paths and supports both static and dynamic imports.
+
 ## Installation
 
 ```bash
@@ -45,7 +46,8 @@ This function checks all files in the `importsDir` for `import` statements and c
 
 ```ts
 import path from 'node:path'
-import { getRelatedFiles, parseExports } from 'esfinder'
+import { getRelatedFiles, parseExports } from 'esfinder' // by babel
+import { getRelatedFiles, parseExports } from 'esfinder/swc' // by swc
 
 const files = ['./src/a.js', './src/c.js']
 const importsDir = './src/__tests__'
