@@ -12,6 +12,8 @@ export default antfu(
   {
     rules: {
       'no-console': 'off',
+      'no-unused-vars': 'off',
+      'no-eval': 'off',
     },
   },
 )

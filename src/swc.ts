@@ -8,10 +8,16 @@ import { globby } from 'globby'
 const exportsCache = new Map()
 
 async function parseExports(filePath: string): Promise<Set<string>> {
-  if (exportsCache.has(filePath))
-    return exportsCache.get(filePath)
+  // 解析文件路径，支持不带扩展名的文件
+  const resolvedPath = await resolveFilePath(filePath)
+  if (!resolvedPath) {
+    throw new Error(`Could not resolve file path: ${filePath}`)
+  }
 
-  const code = await fs.readFile(filePath, 'utf-8')
+  if (exportsCache.has(resolvedPath))
+    return exportsCache.get(resolvedPath)
+
+  const code = await fs.readFile(resolvedPath, 'utf-8')
   const ast = parseSync(code, {
     syntax: 'typescript',
     tsx: true,
@@ -24,51 +30,114 @@ async function parseExports(filePath: string): Promise<Set<string>> {
     if (!node)
       return
 
-    if (node.type === 'ExportNamedDeclaration') {
+    // SWC uses different node types
+    if (node.type === 'ExportDeclaration') {
+      // Handle export const a = 1, export function b() {}, export class C {}
       if (node.declaration) {
         if (node.declaration.declarations) {
+          // Variable declarations
           node.declaration.declarations.forEach((d: any) => {
-            if (d.id?.type === 'Identifier')
+            if (d.id?.type === 'Identifier') {
               exports.add(d.id.value)
+            }
           })
-        }
-        else if (node.declaration.id) {
-          exports.add(node.declaration.id.value)
+        } else if (node.declaration.identifier) {
+          // Function/Class declarations
+          exports.add(node.declaration.identifier.value)
         }
       }
+    } else if (node.type === 'ExportNamedDeclaration') {
+      // Handle export { a as a1, b as b1 }
       if (node.specifiers) {
         node.specifiers.forEach((s: any) => {
-          if (s.exported?.value)
+          if (s.exported?.value) {
             exports.add(s.exported.value)
+          }
         })
       }
-    }
-    else if (node.type === 'ExportDefaultDeclaration') {
+    } else if (node.type === 'ExportDefaultDeclaration') {
       exports.add('default')
     }
 
-    for (const key in node) {
-      if (typeof node[key] === 'object')
-        traverse(node[key])
+    // Recursively traverse
+    if (Array.isArray(node)) {
+      node.forEach(traverse)
+    } else if (typeof node === 'object') {
+      for (const key in node) {
+        if (key !== 'parent' && typeof node[key] === 'object') {
+          traverse(node[key])
+        }
+      }
     }
   }
 
   traverse(ast)
-  exportsCache.set(filePath, exports)
+  exportsCache.set(resolvedPath, exports)
   return exports
 }
 
 const DEFAULT_EXTENSIONS = ['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs']
 const pathResolutionCache = new Map()
 
+/**
+ * 解析文件路径，支持不带扩展名的文件
+ */
+async function resolveFilePath(
+  filePath: string,
+  extensions: string[] = DEFAULT_EXTENSIONS
+): Promise<string | null> {
+  const absolutePath = path.resolve(filePath)
+  
+  // 如果文件已经有扩展名，直接检查是否存在
+  if (path.extname(filePath)) {
+    try {
+      await fs.access(absolutePath)
+      return absolutePath
+    } catch {
+      // 文件不存在
+    }
+    return null
+  }
+
+  // 如果没有扩展名，尝试添加各种扩展名
+  const tryPaths = [absolutePath]
+  extensions.forEach((ext) => {
+    tryPaths.push(`${absolutePath}${ext}`)
+  })
+
+  // 尝试 index 文件
+  extensions.forEach((ext) => {
+    tryPaths.push(path.join(absolutePath, `index${ext}`))
+  })
+
+  for (const tryPath of tryPaths) {
+    try {
+      await fs.access(tryPath)
+      return tryPath
+    } catch {
+      // 文件不存在，继续尝试下一个
+    }
+  }
+
+  return null
+}
+
 async function getRelatedFiles(files: string[], importsDir: string, extensions: string[] = DEFAULT_EXTENSIONS): Promise<string[]> {
-  const targetFiles = new Set(files.map((f) => {
-    const resolved = path.resolve(f)
-    extensions.forEach((ext) => {
-      pathResolutionCache.set(resolved + ext, resolved)
-    })
-    return resolved
-  }))
+  // 将输入文件转为绝对路径，支持不带后缀的文件
+  const targetFiles = new Set<string>()
+  
+  for (const f of files) {
+    const resolvedPath = await resolveFilePath(f, extensions)
+    if (resolvedPath) {
+      targetFiles.add(resolvedPath)
+      // 缓存原始路径和所有可能的后缀组合
+      extensions.forEach((ext) => {
+        pathResolutionCache.set(resolvedPath + ext, resolvedPath)
+      })
+    } else {
+      console.warn(`Warning: Could not resolve file path: ${f}`)
+    }
+  }
 
   const testFiles = await globby([`${importsDir}/**/*.{js,ts,jsx,tsx}`], { absolute: true, expandDirectories: false })
   const results = new Set<string>()

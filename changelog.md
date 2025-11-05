@@ -1,5 +1,55 @@
 # changelog
 
+## 0.0.2-alpha.6 (Major Update)
+
+### 🚀 新功能
+
+**多解析器支持**
+- ✨ 新增 OXC 解析器支持 (`esfinder/oxc`)
+- 🔧 改进 SWC 解析器，修复导出解析问题
+- 📊 性能对比：OXC > SWC > Babel
+
+**高级API功能**
+- 🔍 `buildDependencyGraph()` - 构建完整的项目依赖图
+- 🔄 `findCircularDependencies()` - 检测循环依赖
+- 📤 `findUnusedExports()` - 查找未使用的导出
+- 🔗 `getAllDependencies()` - 递归获取所有依赖
+- ↩️ `getReverseDependencies()` - 反向依赖分析
+- 📥 `parseImports()` - 解析文件导入
+
+**CLI工具**
+- 🖥️ 完整的命令行界面
+- 📦 `esfinder exports` - 解析文件导出
+- 🔗 `esfinder related` - 查找相关文件
+- 🏥 `esfinder check` - 项目健康检查
+- 📊 `esfinder graph` - 依赖图生成
+- 💾 `esfinder cache` - 缓存管理
+
+**性能优化**
+- ⚡ 智能缓存系统
+- 🔧 路径解析优化
+- 📈 批量处理支持
+- 📊 缓存统计和管理
+
+### 📚 文档完善
+
+- 📖 完整的API文档 (`docs/API.md`)
+- 📋 详细的使用指南 (`docs/GUIDE.md`)
+- 🤝 贡献指南 (`CONTRIBUTING.md`)
+- 🧪 性能测试套件
+
+### 🐛 修复
+
+- 🔧 修复 Babel traverse 导入问题
+- 🔧 修复 SWC 导出解析逻辑
+- 🔧 改进 TypeScript 类型定义
+- 🔧 优化错误处理
+
+### 💥 破坏性变更
+
+- 📦 导出的API有所变化，新增了多个高级功能
+- 🔧 缓存机制重构，提供更好的性能
+
 ## 0.0.2-alpha.3
 
 针对自动补全文件后缀的代码升级主要改进说明：
