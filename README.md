@@ -290,21 +290,83 @@ ESFinder comes with a powerful CLI tool:
 # Install globally
 npm install -g esfinder
 
-# Parse exports from a file
+# Or use with npx
+npx esfinder <command>
+```
+
+### Commands
+
+#### `exports` - Parse exports from a file
+
+```bash
+esfinder exports <file> [options]
+
+# Options:
+#   -p, --parser <parser>  Parser to use (babel|swc|oxc) (default: "babel")
+
+# Examples:
 esfinder exports src/utils.ts
+esfinder exports src/utils.ts --parser swc
+esfinder exports src/utils.ts -p oxc
+```
 
-# Find related files
-esfinder related src/utils.ts src/config.ts --dir src/components
+#### `related` - Find files related to given files
 
-# Run project health check
+```bash
+esfinder related <files...> [options]
+
+# Options:
+#   -d, --dir <dir>        Directory to search in (default: "./src")
+#   -p, --parser <parser>  Parser to use (babel|swc|oxc) (default: "babel")
+
+# Examples:
+esfinder related src/utils.ts --dir src/components
+esfinder related src/utils.ts src/config.ts -d ./src
+esfinder related src/api.ts --parser swc
+```
+
+#### `check` - Run health checks on a project
+
+```bash
+esfinder check <dir>
+
+# Examples:
 esfinder check ./src
+esfinder check .
+```
 
-# Build dependency graph
+This command will:
+- Check for circular dependencies
+- Find unused exports
+- Display project statistics (total files, average imports/exports per file)
+
+#### `graph` - Build and display dependency graph
+
+```bash
+esfinder graph <dir> [options]
+
+# Options:
+#   -f, --format <format>  Output format (json|text) (default: "text")
+
+# Examples:
 esfinder graph ./src
+esfinder graph ./src --format json
+esfinder graph ./src -f json > graph.json
+```
 
-# Manage cache
+#### `cache` - Manage cache
+
+```bash
+esfinder cache [options]
+
+# Options:
+#   -c, --clear  Clear all caches
+#   -s, --stats  Show cache statistics
+
+# Examples:
 esfinder cache --stats
 esfinder cache --clear
+esfinder cache -s
 ```
 
 ## 📚 Documentation
