@@ -1,12 +1,12 @@
-import { defineBuildConfig } from 'unbuild'
+import { defineConfig } from 'robuild'
 
-export default defineBuildConfig({
-  entries: [
+export default defineConfig({
+  entry: [
     'src/index',
     'src/swc',
     'src/oxc',
     'src/cli',
   ],
-  declaration: 'node16',
+  target: 'esnext',
   clean: true,
 })
